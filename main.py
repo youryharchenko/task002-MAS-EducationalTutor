@@ -11,6 +11,7 @@ from rich.console import Console
 
 from agent import PlanState, app, logger_callback
 from kb import chroma_client, new_kb
+from tasks import huey, test_task
 
 # Команди та їхні ариті
 commands = {
@@ -23,6 +24,8 @@ commands = {
     "close": 0,
     "hello": 0,
     "help": 0,
+    "test-task": 1,
+    "status-task": 1,
 }
 
 STUDENT_ID = "Студент01"
@@ -112,6 +115,19 @@ def main():
                     console.print("[bold green]Чим можу вам допомогти?[/bold green]")
                 case ["help"]:
                     print_help()
+                case ["status-task", task_id]:
+                    # Отримуємо обгортку результату з брокера за ID
+                    result = huey.result(task_id, preserve=True)
+                    if result is None:
+                        print("Статус: ⏳ В черзі (Pending) або не знайдено")
+                    else:
+                        print("Статус: ✅ Виконано успішно")
+                        print(f"Результат: {result}")
+                case ["test-task", name]:
+                    result_wrapper = test_task(name)
+                    console.print(
+                        f"[bold green]Task ID: {result_wrapper.id}[/bold green]"
+                    )
                 case ["error"]:
                     console.print("")
                 case _:
