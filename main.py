@@ -11,7 +11,8 @@ from rich.console import Console
 
 from agent import PlanState, app, logger_callback
 from kb import chroma_client, new_kb
-from tasks import huey, test_task
+from query_agent import QueryState
+from tasks import huey, query_task, test_task
 
 # Команди та їхні ариті
 commands = {
@@ -137,20 +138,13 @@ def main():
                         "Передаємо питання LLM",
                     )
                     thread_id = f"{STUDENT_ID}/{TOPIC_ID}"
-                    query_input: PlanState = {
+                    query_input: QueryState = {
                         "student_id": STUDENT_ID,
                         "topic_id": TOPIC_ID,
                         "task_type": "help",
                         "topic": TOPIC,
-                        "completed": 0,
-                        "current_step_idx": 0,
                         "input_text": "",
-                        "grade": 0,
                         "messages": [query],
-                        "past_steps": [],
-                        "goal": "",
-                        "plan": [],
-                        "results": [],
                         "status": "",
                         "tool_call_count": 0,
                     }
@@ -159,19 +153,13 @@ def main():
                         "callbacks": [logger_callback],
                         "configurable": {"thread_id": thread_id},
                     }
-                    try:
-                        start_time = time.time()
-                        final_output = app.invoke(query_input, config=config)
-                        try:
-                            console.print(f"\n{final_output['messages'][-1].content}\n")
-                        except Exception:
-                            console.print(f"\n{final_output['messages'][-1]}\n")
-
-                        elapsed_time = round(time.time() - start_time, 2)
-                        console.print(f"{elapsed_time} сек.")
-                    except KeyboardInterrupt:
-                        console.print("💥 Виклик зупинено користувачем.")
-                        continue
+                    start_time = time.time()
+                    result_wrapper = query_task(query_input, config)
+                    console.print(
+                        f"[bold green]Task ID: {result_wrapper.id}[/bold green]"
+                    )
+                    elapsed_time = round(time.time() - start_time, 2)
+                    console.print(f"{elapsed_time} сек.")
 
         except Exception as ex:
             console.print(f"[bold red]{ex}[/bold red]")

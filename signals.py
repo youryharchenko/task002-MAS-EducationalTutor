@@ -29,7 +29,7 @@ logger = logging.getLogger("HueySignals")
 def on_task_executing(signal, task):
     thread_id = task.args[0] if task.args else "Unknown"
     logger.info(
-        f"🚀 [SIGNAL] Почато виконання задачі {task.name} (Task ID: {task.id}, Thread: {thread_id})"
+        f"🚀 [SIGNAL] Почато виконання задачі '{task.name}' (Task ID: {task.id}, Thread: {thread_id})"
     )
 
 
@@ -37,7 +37,7 @@ def on_task_executing(signal, task):
 @huey.signal(SIGNAL_COMPLETE)
 def on_task_completed(signal, task, retval=None):
     logger.info(
-        f"✅ [SIGNAL] Задача {task.name} успішно виконана! (Task ID: {task.id})"
+        f"✅ [SIGNAL] Задача '{task.name}' успішно виконана! (Task ID: {task.id})"
     )
 
 
@@ -45,7 +45,7 @@ def on_task_completed(signal, task, retval=None):
 @huey.signal(SIGNAL_ERROR)
 def on_task_error(signal, task, exc=None):
     logger.error(
-        f"❌ [SIGNAL] Збій у задачі {task.name} (Task ID: {task.id})! Помилка: {exc}"
+        f"❌ [SIGNAL] Збій у задачі '{task.name}' (Task ID: {task.id})! Помилка: {exc}"
     )
 
 
@@ -53,5 +53,5 @@ def on_task_error(signal, task, exc=None):
 @huey.signal(SIGNAL_RETRYING)
 def on_task_retrying(signal, task, exc=None):
     logger.warning(
-        f"🔄 [SIGNAL] Перезапуск задачі {task.name} (Task ID: {task.id}) через помилку: {exc}"
+        f"🔄 [SIGNAL] Перезапуск задачі '{task.name}' (Task ID: {task.id}) через помилку: {exc}"
     )
