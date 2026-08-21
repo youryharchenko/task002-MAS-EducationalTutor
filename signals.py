@@ -36,9 +36,7 @@ def on_task_executing(signal, task):
 # 2. Сигнал: Успішне завершення
 @huey.signal(SIGNAL_COMPLETE)
 def on_task_completed(signal, task, retval=None):
-    logger.info(
-        f"✅ [SIGNAL] Задача '{task.name}' успішно виконана! (Task ID: {task.id})"
-    )
+    logger.info(f"✅ [SIGNAL] Задача '{task.name}' завершена! (Task ID: {task.id})")
 
 
 # 3. Сигнал: Помилка виконання (наприклад, збій LLM)

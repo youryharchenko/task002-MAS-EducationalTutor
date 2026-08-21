@@ -3,16 +3,13 @@ import pathlib
 import shlex
 import time
 
-from langgraph.graph.state import RunnableConfig
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.history import FileHistory
 from rich.console import Console
 
-from agent import PlanState, app, logger_callback
 from kb import chroma_client, new_kb
-from query_agent import QueryState
-from tasks import huey, query_task, test_task
+from tasks import gener_task, huey, query_task, test_task
 
 # Команди та їхні ариті
 commands = {
@@ -27,6 +24,7 @@ commands = {
     "help": 0,
     "test-task": 1,
     "status-task": 1,
+    "gener-task": 1,
 }
 
 STUDENT_ID = "Студент01"
@@ -131,35 +129,24 @@ def main():
                     )
                 case ["error"]:
                     console.print("")
+                case ["gener-task", question]:
+                    result_wrapper = gener_task(STUDENT_ID, TOPIC_ID, TOPIC, question)
+                    console.print(
+                        f"[bold green]Task ID: {result_wrapper.id}[/bold green]"
+                    )
                 case _:
                     query = " ".join(repl)
                     console.print(
                         f"Запит: [bold green]{query}[/bold green]\n",
                         "Передаємо питання LLM",
                     )
-                    thread_id = f"{STUDENT_ID}/{TOPIC_ID}"
-                    query_input: QueryState = {
-                        "student_id": STUDENT_ID,
-                        "topic_id": TOPIC_ID,
-                        "task_type": "help",
-                        "topic": TOPIC,
-                        "input_text": "",
-                        "messages": [query],
-                        "status": "",
-                        "tool_call_count": 0,
-                    }
-                    config: RunnableConfig = {
-                        "recursion_limit": 15,
-                        "callbacks": [logger_callback],
-                        "configurable": {"thread_id": thread_id},
-                    }
-                    start_time = time.time()
-                    result_wrapper = query_task(query_input, config)
+                    # start_time = time.time()
+                    result_wrapper = query_task(STUDENT_ID, TOPIC_ID, TOPIC, query)
                     console.print(
                         f"[bold green]Task ID: {result_wrapper.id}[/bold green]"
                     )
-                    elapsed_time = round(time.time() - start_time, 2)
-                    console.print(f"{elapsed_time} сек.")
+                    # elapsed_time = round(time.time() - start_time, 2)
+                    # console.print(f"{elapsed_time} сек.")
 
         except Exception as ex:
             console.print(f"[bold red]{ex}[/bold red]")

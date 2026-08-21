@@ -9,8 +9,9 @@ from langgraph.types import Command, StateSnapshot
 class BaseGraphAgent(ABC):
     """Базовий абстрактний клас для всіх LangGraph агентів навчальної системи."""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, config):
         self.name = name
+        self.config = config
         self.db_path = f"{name}_state.db"
         # Кожен дочірній клас повинен зібрати свій граф
         self.app: CompiledStateGraph = self._compile_graph()
@@ -29,14 +30,14 @@ class BaseGraphAgent(ABC):
 
     # --- УНІФІКОВАНИЙ ПУБЛІЧНИЙ ІНТЕРФЕЙС ---
 
-    def run(self, inputs, config) -> dict[str, Any]:
+    def run(self, inputs) -> dict[str, Any]:
         """Запуск або початок нової сесії агента."""
-        return self.app.invoke(inputs, config=config)
+        return self.app.invoke(inputs, config=self.config)
 
-    def resume(self, resume_data, config) -> dict[str, Any]:
+    def resume(self, resume_data) -> dict[str, Any]:
         """Відновлення виконання агента після HITL (interrupt)."""
-        return self.app.invoke(Command(resume=resume_data), config=config)
+        return self.app.invoke(Command(resume=resume_data), config=self.config)
 
-    def get_state(self, config) -> StateSnapshot:
+    def get_state(self) -> StateSnapshot:
         """Отримання поточного стану та снапшоту сесії."""
-        return app.get_state(config)
+        return app.get_state(self.config)

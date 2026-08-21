@@ -29,13 +29,17 @@ class QueryState(TypedDict):
 
 
 class QueryAgent(BaseGraphAgent):
-    def __init__(self, name: str):
+    def __init__(self, name: str, thread_id: str):
         self.llm = llm
         self.tools = [search_info]
         self.logger_callback = TrajectoryLogger(f"{name}_trajectory.json")
         self.tool_node = ToolNode(self.tools)
-
-        super().__init__(name=name)
+        config = {
+            "recursion_limit": 15,
+            "callbacks": [self.logger_callback],
+            "configurable": {"thread_id": thread_id},
+        }
+        super().__init__(name=name, config=config)
 
     def _build_graph(self) -> StateGraph:
         workflow = StateGraph(QueryState)
